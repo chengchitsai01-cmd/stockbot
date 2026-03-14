@@ -1,0 +1,34 @@
+name: Stock Bot Per 5 Minutes
+
+on:
+  schedule:
+    # 這裡設定每 5 分鐘執行一次 (Cron 格式)
+    # 注意：GitHub Actions 的定時任務有時會有數分鐘的延遲
+    - cron: '*/5 * * * *'
+  workflow_dispatch: # 讓你可以手動在網頁上點擊執行測試
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 檢出程式碼
+      uses: actions/checkout@v3
+
+    - name: 設定 Python 環境
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: 安裝必要套件
+      run: |
+        python -m pip install --upgrade pip
+        pip install yfinance pandas google-generativeai line-bot-sdk
+
+    - name: 執行股票分析程式
+      env:
+        # 這裡將 GitHub Secrets 傳遞給程式
+        GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+        LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
+      run: python stock.py
